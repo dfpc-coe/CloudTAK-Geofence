@@ -47,7 +47,7 @@ function geofence() {
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
             docker compose build geofence \
-            && docker tag CloudTAK-Geofence-geofence:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-geofence:$\{GITSHA\}" \
+            && docker tag cloudtak-geofence-geofence:latest "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-geofence:$\{GITSHA\}" \
             && docker push "$\{AWS_ACCOUNT_ID\}.dkr.ecr.$\{AWS_REGION\}.amazonaws.com/coe-ecr-geofence:$\{GITSHA\}"
         `, (err) => {
             if (err) return reject(err);
