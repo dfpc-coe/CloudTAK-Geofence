@@ -121,7 +121,7 @@ const Resources = {
             }],
             ContainerDefinitions: [{
                 Name: 'api',
-                Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-media:', cf.ref('GitSha')]),
+                Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-geofence:', cf.ref('GitSha')]),
                 MountPoints: [{
                     ContainerPath: '/data',
                     SourceVolume: cf.stackName
