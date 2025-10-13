@@ -19,7 +19,7 @@ for (const env of [
 
 await login();
 console.error('ok - building containers');
-await tak();
+await geofence();
 
 function login() {
     console.error('ok - logging in')
@@ -43,7 +43,7 @@ function login() {
 
 }
 
-function tak() {
+function geofence() {
     return new Promise((resolve, reject) => {
         const $ = CP.exec(`
             docker compose build geofence \
