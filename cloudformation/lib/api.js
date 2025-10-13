@@ -67,6 +67,38 @@ const Resources = {
             VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc']))
         }
     },
+    Listener9851: {
+        Type: 'AWS::ElasticLoadBalancingV2::Listener',
+        Properties: {
+            Certificates: [{
+                CertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')])
+            }],
+            DefaultActions: [{
+                Type: 'forward',
+                TargetGroupArn: cf.ref(`TargetGroup9851`)
+            }],
+            LoadBalancerArn: cf.ref('ELB'),
+            Port: 9851,
+            Protocol: 'TLS'
+        }
+    },
+    TargetGroup9851: {
+        Type: 'AWS::ElasticLoadBalancingV2::TargetGroup',
+        Properties: {
+            Port: 9851,
+            Protocol: 'TCP',
+            TargetType: 'ip',
+            VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
+
+            HealthCheckEnabled: true,
+            HealthCheckIntervalSeconds: 30,
+
+            HealthCheckPort: '9851',
+            HealthCheckProtocol: 'TCP',
+            HealthCheckTimeoutSeconds: 10,
+            HealthyThresholdCount: 5
+        }
+    },
     ServiceTaskDefinition: {
         Type: 'AWS::ECS::TaskDefinition',
         Properties: {
@@ -94,18 +126,16 @@ const Resources = {
                     ContainerPath: '/data',
                     SourceVolume: cf.stackName
                 }],
-                PortMappings: PORTS.map((port) => {
-                    return {
-                        ContainerPort: port.Port,
-                        Protocol: port.Protocol
-                    };
-                }),
+                PortMappings: [{
+                    ContainerPort: 9851,
+                    Protocol: 'tcp'
+                }],
                 Environment: [
                     { Name: 'StackName', Value: cf.stackName },
                     { Name: 'LOG_LEVEL', Value: cf.ref('LogLevel') },
                     { Name: 'Environment', Value: cf.ref('Environment') },
-                    { Name: 'AWS_REGION', Value: cf.region }
-                    { Name: 'TILE38_PASSWORD', Value: Value: cf.sub('{{resolve:secretsmanager:tak-cloudtak-${Environment}/api/geofence:SecretString::AWSCURRENT}}') },
+                    { Name: 'AWS_REGION', Value: cf.region },
+                    { Name: 'TILE38_PASSWORD', Value: cf.sub('{{resolve:secretsmanager:tak-cloudtak-${Environment}/api/geofence:SecretString::AWSCURRENT}}') },
                 ],
                 LogConfiguration: {
                     LogDriver: 'awslogs',
@@ -141,12 +171,10 @@ const Resources = {
             ContainerDefinitions: [{
                 Name: 'task',
                 Image: cf.join([cf.accountId, '.dkr.ecr.', cf.region, '.amazonaws.com/coe-ecr-geofence:', cf.ref('GitSha')]),
-                PortMappings: PORTS.map((port) => {
-                    return {
-                        ContainerPort: port.Port,
-                        Protocol: port.Protocol
-                    };
-                }),
+                PortMappings: [{
+                    ContainerPort: 9851,
+                    Protocol: 'tcp'
+                }],
                 Environment: [
                     { Name: 'StackName', Value: cf.stackName },
                     { Name: 'AWS_DEFAULT_REGION', Value: cf.region }
@@ -239,7 +267,7 @@ const Resources = {
     },
     Service: {
         Type: 'AWS::ECS::Service',
-        DependsOn: PORTS.map((p) => { return `Listener${p.Name}`; }),
+        DependsOn: ['Listener9851'],
         Properties: {
             ServiceName: cf.join('-', [cf.stackName, 'Service']),
             Cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
@@ -257,13 +285,11 @@ const Resources = {
                     ]
                 }
             },
-            LoadBalancers: PORTS.map((p) => {
-                return {
-                    ContainerName: 'api',
-                    ContainerPort: p.Port,
-                    TargetGroupArn: cf.ref(`TargetGroup${p.Name}`)
-                };
-            })
+            LoadBalancers: [{
+                ContainerName: 'api',
+                ContainerPort: 9851,
+                TargetGroupArn: cf.ref('TargetGroup9851')
+            }]
         }
     },
     ServiceSecurityGroup: {
@@ -275,55 +301,16 @@ const Resources = {
             }],
             GroupDescription: 'Allow access to Media ports',
             VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
-            SecurityGroupIngress: PORTS.map((port) => {
-                return {
-                    Description: 'ELB Traffic',
-                    SourceSecurityGroupId: cf.ref('ELBSecurityGroup'),
-                    IpProtocol: port.Protocol,
-                    FromPort: port.Port,
-                    ToPort: port.Port
-                };
-            })
+            SecurityGroupIngress: [{
+                Description: 'ELB Traffic',
+                SourceSecurityGroupId: cf.ref('ELBSecurityGroup'),
+                IpProtocol: 'tcp',
+                FromPort: 9851,
+                ToPort: 9851
+            }]
         }
     }
 };
-
-for (const p of PORTS) {
-    Resources[`Listener${p.Name}`] = {
-        Type: 'AWS::ElasticLoadBalancingV2::Listener',
-        Properties: {
-            Certificates: p.Certificate ? [{
-                CertificateArn: cf.join(['arn:', cf.partition, ':acm:', cf.region, ':', cf.accountId, ':certificate/', cf.ref('SSLCertificateIdentifier')])
-            }] : [],
-            DefaultActions: [{
-                Type: 'forward',
-                TargetGroupArn: cf.ref(`TargetGroup${p.Name}`)
-            }],
-            LoadBalancerArn: cf.ref('ELB'),
-            Port: p.Port,
-            Protocol: p.Certificate && p.Protocol === 'tcp' ? 'TLS' : p.Protocol.toUpperCase()
-        }
-    };
-
-    Resources[`TargetGroup${p.Name}`] = {
-        Type: 'AWS::ElasticLoadBalancingV2::TargetGroup',
-        Properties: {
-            Port: p.Port,
-            Protocol: p.Protocol.toUpperCase(),
-            TargetType: 'ip',
-            VpcId: cf.importValue(cf.join(['tak-vpc-', cf.ref('Environment'), '-vpc'])),
-
-            HealthCheckEnabled: true,
-            HealthCheckIntervalSeconds: 30,
-
-            // UDP Health checks fallback to TCP
-            HealthCheckPort: p.HealthCheckPort || p.Port,
-            HealthCheckProtocol: (p.HealthCheckProtocol || p.Protocol).toUpperCase(),
-            HealthCheckTimeoutSeconds: 10,
-            HealthyThresholdCount: 5
-        }
-    };
-}
 
 export default cf.merge({
     Parameters: {
@@ -356,12 +343,6 @@ export default cf.merge({
         SSLCertificateIdentifier: {
             Description: 'ACM SSL Certificate for HTTP Protocol',
             Type: 'String'
-        }
-    },
-    Outputs: {
-        SubnetAIP: {
-            Description: 'NLB EIP for Subnet A',
-            Value: cf.ref('ELBEIPSubnetA')
         }
     },
     Resources

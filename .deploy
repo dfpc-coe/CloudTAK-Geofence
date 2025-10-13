@@ -12,7 +12,7 @@
     ],
     "artifacts": {
         "docker": [
-            "coe-ecr-geofence:{{gitsha}}",
+            "coe-ecr-geofence:{{gitsha}}"
         ]
     }
 }

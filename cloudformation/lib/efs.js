@@ -6,7 +6,7 @@ export default {
             Type: 'AWS::EFS::FileSystem',
             Properties: {
                 Encrypted: true,
-                KmsKeyId: cf.ref('KMS'),
+                KmsKeyId: cf.importValue(cf.join(['tak-cloudtak-', cf.ref('Environment'), '-kms'])),
                 FileSystemTags: [{
                     Key: 'Name',
                     Value: cf.stackName
