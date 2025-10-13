@@ -1,0 +1,9 @@
+services:
+  geofence:
+    platform: linux/amd64
+    build: .
+    restart: always
+    environment:
+      - TILE38_PASSWORD=ChangeMe
+    ports:
+      - 9851:9851

@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# Tile38 Startup Script
+#
+
+set -euo pipefail
+
+if [[ -e /data/config ]]; then
+    jq ".requirepass='${TILE38_PASSWORD}'" /data/config > /data/config
+else
+    echo "{\"requirepass\":\"${TILE38_PASSWORD}\"}" > /data/config
+fi
+
+tile38-server -d /data

@@ -1,0 +1,37 @@
+{
+    "name": "@tak-ps/cloudtak-geofence",
+    "type": "module",
+    "private": true,
+    "version": "1.0.0",
+    "description": "Infrastructure to support Geofencing services for Cloudtak",
+    "scripts": {
+        "build": "node bin/build.js",
+        "lint": "eslint cloudformation/"
+    },
+    "engines": {
+        "node": ">= 22"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/dfpc-coe/CloudTAK-Geofence.git"
+    },
+    "author": "Nick Ingalls <nick@ingalls.ca>",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/dfpc-coe/CloudTAK-Geofence/issues"
+    },
+    "homepage": "https://github.com/dfpc-coe/CloudTAK-Geofence#readme",
+    "dependencies": {
+        "@openaddresses/batch-alarms": "^4.0.0",
+        "@openaddresses/cloudfriend": "^7.0.0",
+        "@openaddresses/deploy": "^9.1.0",
+        "tsx": "^4.19.2"
+    },
+    "devDependencies": {
+        "@types/node": "^24.0.0",
+        "eslint": "^9.9.0",
+        "eslint-plugin-n": "^17.10.2",
+        "typescript": "^5.6.3",
+        "typescript-eslint": "^8.12.2"
+    }
+}
