@@ -2,7 +2,7 @@
     "name": "@tak-ps/cloudtak-geofence",
     "type": "module",
     "private": true,
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Infrastructure to support Geofencing services for Cloudtak",
     "scripts": {
         "build": "node bin/build.js",
