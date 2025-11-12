@@ -4,4 +4,6 @@ EXPOSE 9851
 
 COPY start /start
 
+RUN apk add jq
+
 CMD ["sh", "./start"]
