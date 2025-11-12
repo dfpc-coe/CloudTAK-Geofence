@@ -12,7 +12,12 @@
 
 ### Pending Release
 
+### v1.0.1
+
+- :rocket: Ensure `jq` is installed on the Docker Image
+
 ### v1.0.0
 
 - :rocket: Initial Release
+
 
