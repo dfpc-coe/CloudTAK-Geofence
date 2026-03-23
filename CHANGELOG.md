@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.0.2
+
+- :rocket: Remove `-Service` postfix from ECS service name
+
 ### v1.0.1
 
 - :rocket: Ensure `jq` is installed on the Docker Image

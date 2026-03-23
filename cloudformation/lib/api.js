@@ -269,7 +269,7 @@ const Resources = {
         Type: 'AWS::ECS::Service',
         DependsOn: ['Listener9851'],
         Properties: {
-            ServiceName: cf.join('-', [cf.stackName, 'Service']),
+            ServiceName: cf.stackName,
             Cluster: cf.join(['tak-vpc-', cf.ref('Environment')]),
             TaskDefinition: cf.ref('ServiceTaskDefinition'),
             LaunchType: 'FARGATE',
@@ -315,7 +315,7 @@ const Resources = {
 export default cf.merge({
     Parameters: {
         SubdomainPrefix: {
-            Description: 'Prefix of domain: ie "video" of video.example.com',
+            Description: 'Prefix of domain: ie "geofence" of geofence.example.com',
             Type: 'String'
         },
         ComputeCpus: {
