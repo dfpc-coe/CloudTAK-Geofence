@@ -135,7 +135,9 @@ const Resources = {
                     { Name: 'LOG_LEVEL', Value: cf.ref('LogLevel') },
                     { Name: 'Environment', Value: cf.ref('Environment') },
                     { Name: 'AWS_REGION', Value: cf.region },
-                    { Name: 'TILE38_PASSWORD', Value: cf.sub('{{resolve:secretsmanager:tak-cloudtak-${Environment}/api/geofence:SecretString::AWSCURRENT}}') },
+                ],
+                Secrets: [
+                    { Name: 'TILE38_PASSWORD', ValueFrom: cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:tak-cloudtak-', cf.ref('Environment'), '/api/geofence']) }
                 ],
                 LogConfiguration: {
                     LogDriver: 'awslogs',
@@ -217,6 +219,14 @@ const Resources = {
                             'logs:DescribeLogStreams'
                         ],
                         Resource: [cf.join(['arn:', cf.partition, ':logs:*:*:*'])]
+                    },{
+                        Effect: 'Allow',
+                        Action: ['secretsmanager:GetSecretValue'],
+                        Resource: [cf.join(['arn:', cf.partition, ':secretsmanager:', cf.region, ':', cf.accountId, ':secret:tak-cloudtak-', cf.ref('Environment'), '/api/geofence-*'])]
+                    },{
+                        Effect: 'Allow',
+                        Action: ['kms:Decrypt'],
+                        Resource: [cf.join(['arn:', cf.partition, ':kms:', cf.region, ':', cf.accountId, ':key/', cf.importValue(cf.join(['tak-cloudtak-', cf.ref('Environment'), '-kms']))])]
                     }]
                 }
             }],

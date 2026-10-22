@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.1.0
+
+- :rocket: Move AWS Secrets from Task Definition `Environment` to `Secrets` to avoid exposing them in ECS console
+
 ### v1.0.2
 
 - :rocket: Remove `-Service` postfix from ECS service name
