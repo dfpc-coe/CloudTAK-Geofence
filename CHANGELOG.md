@@ -12,6 +12,10 @@
 
 ### Pending Release
 
+### v1.1.1 - 2026-11-24
+
+- :arrow_up: Update all GH Action Dependencies to latest versions
+
 ### v1.1.0
 
 - :rocket: Move AWS Secrets from Task Definition `Environment` to `Secrets` to avoid exposing them in ECS console
